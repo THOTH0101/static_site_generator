@@ -26,3 +26,7 @@ class TestHTMLNode(unittest.TestCase):
         self.assertEqual(
             node.__repr__(), "<p>\n\tThis is a paragraph\n\t\tanchor\n</p>"
         )
+
+
+if __name__ == "__main__":
+    unittest.main()
