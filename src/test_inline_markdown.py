@@ -9,6 +9,7 @@ from inline_markdown import (
     text_to_textnodes,
 )
 
+from markdown import markdown_to_html_node
 from textnode import TextNode, TextType
 
 
@@ -208,7 +209,6 @@ class TestInlineMarkdown(unittest.TestCase):
         self.assertListEqual(expected, nodes)
 
     def test_text_to_textnodes_simple(self):
-        # Test only one type to ensure the pipeline doesn't break simple text
         text = "Only **bold** here."
         nodes = text_to_textnodes(text)
         expected = [
@@ -219,14 +219,12 @@ class TestInlineMarkdown(unittest.TestCase):
         self.assertListEqual(expected, nodes)
 
     def test_text_to_textnodes_no_markdown(self):
-        # Test plain text
         text = "Just plain text."
         nodes = text_to_textnodes(text)
         expected = [TextNode("Just plain text.", TextType.TEXT)]
         self.assertListEqual(expected, nodes)
 
     def test_text_to_textnodes_consecutive_markdown(self):
-        # Test markdown items right next to each other
         text = "**bold**_italic_`code`"
         nodes = text_to_textnodes(text)
         expected = [
@@ -235,6 +233,113 @@ class TestInlineMarkdown(unittest.TestCase):
             TextNode("code", TextType.CODE),
         ]
         self.assertListEqual(expected, nodes)
+
+    def test_headings(self):
+        md = """
+# This is an h1
+## This is an h2
+###### This is an h6
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><h1>This is an h1</h1><h2>This is an h2</h2><h6>This is an h6</h6></div>",
+        )
+
+    def test_blockquote(self):
+        md = """
+> This is a quote
+> with multiple lines and **bold** text
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><blockquote>This is a quote with multiple lines and <b>bold</b> text</blockquote></div>",
+        )
+
+    def test_unordered_list(self):
+        md = """
+- First item
+- Second item with _italics_
+- Third item
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><ul><li>First item</li><li>Second item with <i>italics</i></li><li>Third item</li></ul></div>",
+        )
+
+    def test_ordered_list(self):
+        md = """
+1. First item
+2. Second item
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><ol><li>First item</li><li>Second item</li></ol></div>",
+        )
+
+    def test_mixed_markdown(self):
+        md = """
+# Main Title
+
+This is a paragraph with a [link](https://www.google.com).
+
+> A wise quote.
+
+- List item 1
+- List item 2
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        expected = (
+            "<div>"
+            "<h1>Main Title</h1>"
+            '<p>This is a paragraph with a <a href="https://www.google.com">link</a>.</p>'
+            "<blockquote>A wise quote.</blockquote>"
+            "<ul><li>List item 1</li><li>List item 2</li></ul>"
+            "</div>"
+        )
+        self.assertEqual(html, expected)
+
+    def test_complete_document(self):
+        md = """
+# Title
+
+This is a paragraph with **bold**.
+
+- List item 1
+- List item 2
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        expected = (
+            "<div>"
+            "<h1>Title</h1>"
+            "<p>This is a paragraph with <b>bold</b>.</p>"
+            "<ul><li>List item 1</li><li>List item 2</li></ul>"
+            "</div>"
+        )
+        self.assertEqual(html, expected)
+
+    def test_blockquote_inline(self):
+        md = "> Quotes can have _italics_"
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html, "<div><blockquote>Quotes can have <i>italics</i></blockquote></div>"
+        )
+
+    def test_code_block_no_parsing(self):
+        md = "```\nThis **is** code\n```"
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html, "<div><pre><code>This **is** code\n</code></pre></div>")
 
 
 if __name__ == "__main__":

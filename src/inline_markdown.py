@@ -1,5 +1,73 @@
 import re
-from textnode import TextNode, TextType
+from block_markdown import BlockType, block_to_block_type, text_to_heading_tag
+from htmlnode import LeafNode, ParentNode
+from textnode import TextNode, TextType, text_node_to_html_node
+
+
+def create_block_nodes(text):
+    block_type = block_to_block_type(text)
+    children_nodes = []
+
+    if block_type == BlockType.CODE:
+        children_nodes.append(
+            ParentNode("pre", [LeafNode("code", text.strip("```").lstrip("\n"))])
+        )
+
+    if block_type == BlockType.HEADING:
+        sections = text.split("\n")
+        for section in sections:
+            children_nodes.append(
+                ParentNode(
+                    text_to_heading_tag(section),
+                    text_to_children(section.split(" ", 1)[1]),
+                )
+            )
+
+    if block_type == BlockType.PARAGRAPH:
+        children_nodes.append(
+            ParentNode(
+                "p",
+                text_to_children(" ".join(text.split("\n"))),
+            )
+        )
+
+    if block_type == BlockType.QUOTE:
+        sections = text.split("\n")
+        quote_block = " ".join(
+            list(map(lambda line: line.strip(">").strip(), sections))
+        )
+        children_nodes.append(ParentNode("blockquote", text_to_children(quote_block)))
+
+    if block_type == BlockType.UNORDERED_LIST:
+        sections = text.split("\n")
+        ul_block = []
+        for section in sections:
+            ul_block.append(
+                ParentNode(
+                    "li",
+                    text_to_children(section.lstrip("- ")),
+                )
+            )
+        children_nodes.append(ParentNode("ul", ul_block))
+
+    if block_type == BlockType.ORDERED_LIST:
+        sections = text.split("\n")
+        ol_block = []
+        for section in sections:
+            ol_block.append(
+                ParentNode(
+                    "li",
+                    text_to_children(section.split(". ", 1)[1]),
+                )
+            )
+        children_nodes.append(ParentNode("ol", ol_block))
+
+    return children_nodes
+
+
+def text_to_children(text):
+    text_nodes = text_to_textnodes(text)
+    return list(map(lambda text_node: text_node_to_html_node(text_node), text_nodes))
 
 
 def text_to_textnodes(text):

@@ -17,6 +17,10 @@ def markdown_to_blocks(markdown):
     return sections
 
 
+def text_to_heading_tag(block):
+    return f"h{len(block.split(' ', 1)[0])}"
+
+
 def block_to_block_type(block):
     if re.match(r"^#{1,6} ", block):
         return BlockType.HEADING
