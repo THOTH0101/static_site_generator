@@ -36,6 +36,19 @@ the **same** even with inline stuff
             "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
         )
 
+    def test_image_block(self):
+        md = """
+# Tolkien Fan Club
+
+![JRR Tolkien sitting](/images/tolkien.png)
+
+Just still test shit
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        expected = '<div><h1>Tolkien Fan Club</h1><p><img src="/images/tolkien.png" alt="JRR Tolkien sitting"></img></p><p>Just still test shit</p></div>'
+        self.assertEqual(html, expected)
+
 
 if __name__ == "__main__":
     unittest.main()

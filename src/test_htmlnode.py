@@ -93,7 +93,7 @@ class TestHTMLNode(unittest.TestCase):
         )
 
     def test_leaf_with_no_tag(self):
-        node = LeafNode("", "This is a plain text")
+        node = LeafNode(None, "This is a plain text")
         self.assertEqual(node.to_html(), "This is a plain text")
 
     def test_to_html_many_children(self):
