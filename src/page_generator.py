@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from block_markdown import BlockType, block_to_block_type, markdown_to_blocks
 from markdown import markdown_to_html_node
 
@@ -30,3 +31,24 @@ def generate_page(from_path, template_path, dest_path):
         os.makedirs(dir_name)
     with open(dest_path, "w") as f:
         f.write(full_html)
+
+
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    if not os.path.exists(dir_path_content):
+        print(f"Content directory not found: {dir_path_content}")
+        return
+
+    print(dir_path_content)
+    contents = os.listdir(dir_path_content)
+    for content in contents:
+        content_path = os.path.join(dir_path_content, content)
+
+        if os.path.isfile(content_path):
+            html_path = Path(content).with_suffix(".html").name
+            dest_path = os.path.join(dest_dir_path, html_path)
+            generate_page(content_path, template_path, dest_path)
+        else:
+            dest_path = os.path.join(dest_dir_path, content)
+            print(f"Directory: {dest_path}")
+            os.makedirs(dest_path)
+            generate_pages_recursive(content_path, template_path, dest_path)

@@ -1,7 +1,6 @@
 import os
 from file_operations import copy_contents_to_public
-from page_generator import generate_page
-from textnode import TextNode
+from page_generator import generate_pages_recursive
 
 
 def main():
@@ -12,8 +11,8 @@ def main():
     print("--- Starting Site Build ---")
     copy_contents_to_public(src_dir, dest_dir)
     print("--- Build Complete ---")
-    generate_page("content/index.md", "template.html", "public/index.html")
-    print("--- Generation Complete ---")
+    generate_pages_recursive("./content", "./template.html", "./public")
+    print("--- Page Generation Complete ---")
 
 
 main()
